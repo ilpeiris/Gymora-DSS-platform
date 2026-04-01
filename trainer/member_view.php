@@ -39,23 +39,33 @@ if ($medical) {
     $conditions = $condStmt->fetchAll();
 }
 
-// 3. Fetch Active Workout Plan
-$planStmt = $pdo->prepare("SELECT id, week_number, notes, created_at FROM workout_plans WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1");
+// 3. Fetch Workout Plan History (All Plans)
+$planStmt = $pdo->prepare("SELECT id, week_number, status, notes, created_at FROM workout_plans WHERE user_id = ? ORDER BY week_number DESC, created_at DESC");
 $planStmt->execute([$client_id]);
-$active_plan = $planStmt->fetch();
+$all_plans = $planStmt->fetchAll();
 
 $plan_exercises = [];
-if ($active_plan) {
-    // Fetch the specific exercises attached to this plan
+if (count($all_plans) > 0) {
+    // Grab all the IDs of the plans we just found
+    $planIds = array_column($all_plans, 'id');
+    // Create a string of question marks for our IN() clause
+    $inQuery = implode(',', array_fill(0, count($planIds), '?'));
+    
+    // Fetch all exercises attached to ALL of these plans
     $exStmt = $pdo->prepare("
-        SELECT we.day_of_week, we.sets, we.reps, e.name as exercise_name
+        SELECT we.plan_id, we.day_of_week, we.sets, we.reps, e.name as exercise_name
         FROM workout_exercises we
         JOIN exercises e ON we.exercise_id = e.id
-        WHERE we.plan_id = ?
+        WHERE we.plan_id IN ($inQuery)
         ORDER BY FIELD(we.day_of_week, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
     ");
-    $exStmt->execute([$active_plan['id']]);
-    $plan_exercises = $exStmt->fetchAll();
+    $exStmt->execute($planIds);
+    $fetched_exercises = $exStmt->fetchAll();
+    
+    // Group the exercises by their plan_id so they are easy to display
+    foreach ($fetched_exercises as $ex) {
+        $plan_exercises[$ex['plan_id']][] = $ex;
+    }
 }
 
 // 4. Fetch Progress Logs (History)
@@ -129,50 +139,67 @@ require_once '../includes/header.php';
     <div class="col-md-8">
         <div class="card shadow-sm border-dark mb-4">
             <div class="card-header bg-dark text-white fw-bold">
-                <i class="bi bi-card-checklist"></i> Current Workout Plan
+                <i class="bi bi-card-checklist"></i> Workout Plan History
             </div>
-            <div class="card-body">
-                <?php if ($active_plan): ?>
-                    <div class="d-flex justify-content-between mb-2">
-                        <h5 class="text-primary">Week <?= htmlspecialchars($active_plan['week_number']) ?> Plan</h5>
-                        <small class="text-muted">Assigned: <?= date('M j, Y', strtotime($active_plan['created_at'])) ?></small>
-                    </div>
-                    
-                    <div class="bg-light p-2 rounded border mb-3">
-                        <strong>Trainer Notes:</strong><br>
-                        <span style="white-space: pre-wrap;"><?= htmlspecialchars($active_plan['notes']) ?></span>
-                    </div>
+            <div class="card-body p-2">
+                <?php if (count($all_plans) > 0): ?>
+                    <div class="accordion" id="plansAccordion">
+                        <?php foreach ($all_plans as $index => $plan): 
+                            $pid = $plan['id'];
+                            $is_latest = ($index === 0); // Open the newest plan by default
+                            $badge_color = $plan['status'] == 'active' ? 'bg-success' : ($plan['status'] == 'completed' ? 'bg-secondary' : 'bg-warning text-dark');
+                        ?>
+                            <div class="accordion-item border-secondary mb-2" style="border-radius: 6px; overflow: hidden;">
+                                <h2 class="accordion-header" id="heading<?= $pid ?>">
+                                    <button class="accordion-button <?= $is_latest ? '' : 'collapsed' ?>" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $pid ?>">
+                                        <strong>Week <?= htmlspecialchars($plan['week_number']) ?></strong> 
+                                        <span class="badge <?= $badge_color ?> ms-3"><?= ucfirst(htmlspecialchars($plan['status'])) ?></span>
+                                        <small class="ms-auto text-muted pe-3"><?= date('M j, Y', strtotime($plan['created_at'])) ?></small>
+                                    </button>
+                                </h2>
+                                <div id="collapse<?= $pid ?>" class="accordion-collapse collapse <?= $is_latest ? 'show' : '' ?>" data-bs-parent="#plansAccordion">
+                                    <div class="accordion-body bg-light">
+                                        <div class="bg-white p-3 rounded border mb-3">
+                                            <strong>Trainer Notes:</strong><br>
+                                            <span style="white-space: pre-wrap;"><?= htmlspecialchars($plan['notes']) ?></span>
+                                        </div>
 
-                    <?php if (count($plan_exercises) > 0): ?>
-                        <h6 class="fw-bold border-bottom pb-1">Assigned Routine</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-bordered">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Day</th>
-                                        <th>Exercise</th>
-                                        <th>Sets</th>
-                                        <th>Reps</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($plan_exercises as $ex): ?>
-                                        <tr>
-                                            <td class="align-middle"><strong><?= htmlspecialchars($ex['day_of_week']) ?></strong></td>
-                                            <td class="align-middle"><?= htmlspecialchars($ex['exercise_name']) ?></td>
-                                            <td class="align-middle"><?= htmlspecialchars($ex['sets']) ?></td>
-                                            <td class="align-middle"><?= htmlspecialchars($ex['reps']) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php else: ?>
-                        <p class="text-muted small">No specific exercises were added to this plan.</p>
-                    <?php endif; ?>
-
+                                        <?php if (isset($plan_exercises[$pid])): ?>
+                                            <h6 class="fw-bold border-bottom pb-1">Assigned Routine</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-bordered bg-white">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Day</th>
+                                                            <th>Exercise</th>
+                                                            <th>Sets</th>
+                                                            <th>Reps</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($plan_exercises[$pid] as $ex): ?>
+                                                            <tr>
+                                                                <td class="align-middle"><strong><?= htmlspecialchars($ex['day_of_week']) ?></strong></td>
+                                                                <td class="align-middle"><?= htmlspecialchars($ex['exercise_name']) ?></td>
+                                                                <td class="align-middle"><?= htmlspecialchars($ex['sets']) ?></td>
+                                                                <td class="align-middle"><?= htmlspecialchars($ex['reps']) ?></td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        <?php else: ?>
+                                            <p class="text-muted small mb-0">No specific exercises were added to this plan.</p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 <?php else: ?>
-                    <p class="text-muted mb-0">No active workout plan for this client.</p>
+                    <div class="p-3">
+                        <p class="text-muted mb-0">No workout plans created for this client yet.</p>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
