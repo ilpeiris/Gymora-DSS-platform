@@ -25,28 +25,37 @@ require_once __DIR__ . '/../config/constants.php';
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        <?php if (isLoggedIn()): ?>
+     
+<ul class="navbar-nav ms-auto">
+    <?php if (isLoggedIn()): ?>
+        <li class="nav-item">
+            <span class="nav-link text-light me-3">Welcome, <?= htmlspecialchars($_SESSION['name']) ?></span>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link" href="<?= BASE_URL . $_SESSION['role'] ?>/dashboard.php">Dashboard</a>
+        </li>
+
+        <?php if ($_SESSION['role'] === ROLE_USER): ?>
             <li class="nav-item">
-                <span class="nav-link text-light">Welcome, <?= htmlspecialchars($_SESSION['name']) ?> (<?= ucfirst($_SESSION['role']) ?>)</span>
-            </li>
-            
-            <li class="nav-item">
-                <a class="nav-link" href="<?= BASE_URL . $_SESSION['role'] ?>/dashboard.php">Dashboard</a>
-            </li>
-            
-            <li class="nav-item">
-                <a class="nav-link text-danger" href="<?= BASE_URL ?>auth/logout.php">Logout</a>
-            </li>
-        <?php else: ?>
-            <li class="nav-item">
-                <a class="nav-link" href="<?= BASE_URL ?>auth/login.php">Login</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link btn btn-primary text-white ms-2 px-3" href="<?= BASE_URL ?>auth/register.php">Register</a>
+                <a class="nav-link" href="<?= BASE_URL ?>user/profile.php">My Profile</a>
             </li>
         <?php endif; ?>
-      </ul>
+        
+        <li class="nav-item">
+            <a class="nav-link text-danger ms-lg-3" href="<?= BASE_URL ?>auth/logout.php">Logout</a>
+        </li>
+    <?php else: ?>
+        <li class="nav-item">
+            <a class="nav-link" href="<?= BASE_URL ?>auth/login.php">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link btn btn-primary text-white ms-2 px-3" href="<?= BASE_URL ?>auth/register.php">Register</a>
+        </li>
+    <?php endif; ?>
+</ul>
+
+      
     </div>
   </div>
 </nav>
