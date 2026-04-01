@@ -66,9 +66,12 @@ require_once '../includes/header.php';
                 <h5 class="mb-0">Quick Links</h5>
             </div>
             <div class="card-body d-grid gap-3">
-                <a href="users.php" class="btn btn-outline-dark text-start"> Manage Users & Roles</a>
-                <a href="packages.php" class="btn btn-outline-dark text-start"> Manage Membership Packages</a>
-                <a href="audit_logs.php" class="btn btn-outline-danger text-start"> View GDPR Audit Logs</a>
+                <div class="card-body d-grid gap-3">
+    <a href="users.php" class="btn btn-outline-dark text-start"> Manage Users & Roles</a>
+    <a href="packages.php" class="btn btn-outline-dark text-start">Manage Membership Packages</a>
+    <a href="dss_rules.php" class="btn btn-outline-info text-start">View DSS Logic Rules</a>
+    <a href="audit_logs.php" class="btn btn-outline-danger text-start"> View GDPR Audit Logs</a>
+</div>
             </div>
         </div>
     </div>
