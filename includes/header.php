@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../config/constants.php';
 ?>
@@ -11,6 +10,7 @@ require_once __DIR__ . '/../config/constants.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gymora - Smart Gym Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         body { background-color: #f8f9fa; }
         .navbar-brand { font-weight: bold; color: #0d6efd !important; }
@@ -46,6 +46,16 @@ require_once __DIR__ . '/../config/constants.php';
             <li class="nav-item">
                 <a class="nav-link" href="<?= BASE_URL ?>user/profile.php">My Profile</a>
             </li>
+            
+        <?php elseif ($_SESSION['role'] === ROLE_DOCTOR): ?>
+            <li class="nav-item">
+                <a class="nav-link fw-bold text-danger" href="<?= BASE_URL ?>doctor/chat.php"><i class="bi bi-chat-dots"></i> Patient Messages</a>
+            </li>
+            
+        <?php elseif ($_SESSION['role'] === ROLE_TRAINER): ?>
+            <li class="nav-item">
+                <a class="nav-link fw-bold text-primary" href="<?= BASE_URL ?>trainer/chat.php"><i class="bi bi-chat-dots"></i> Client Messages</a>
+            </li>
         <?php endif; ?>
         
         <li class="nav-item">
@@ -61,9 +71,8 @@ require_once __DIR__ . '/../config/constants.php';
     <?php endif; ?>
 </ul>
 
-      
     </div>
   </div>
 </nav>
 
-<div class="container"> 
+<div class="container">
