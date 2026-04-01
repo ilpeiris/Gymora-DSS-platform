@@ -16,12 +16,12 @@ if (!$assessment_id) {
 // LOG THE GDPR EVENT - Doctor is reading medical data!
 logAudit($_SESSION['user_id'], 'READ_MEDICAL_REPORT', 'medical', $assessment_id);
 
-// Fetch Assessment Details
+// Fetch Assessment Details (using LEFT JOIN so older test records don't break)
 $stmt = $pdo->prepare("
     SELECT m.*, u.name as patient_name, d.name as doctor_name 
     FROM medical_assessments m
-    JOIN users u ON m.user_id = u.id
-    JOIN users d ON m.doctor_id = d.id
+    LEFT JOIN users u ON m.user_id = u.id
+    LEFT JOIN users d ON m.doctor_id = d.id
     WHERE m.id = ?
 ");
 $stmt->execute([$assessment_id]);
