@@ -3,7 +3,6 @@
 require_once '../config/db.php';
 require_once '../config/session.php';
 require_once '../config/constants.php';
-require_once '../dss/dss_engine.php';
 
 requireRole(ROLE_TRAINER);
 
@@ -46,12 +45,9 @@ $all_plans = $planStmt->fetchAll();
 
 $plan_exercises = [];
 if (count($all_plans) > 0) {
-    // Grab all the IDs of the plans we just found
     $planIds = array_column($all_plans, 'id');
-    // Create a string of question marks for our IN() clause
     $inQuery = implode(',', array_fill(0, count($planIds), '?'));
     
-    // Fetch all exercises attached to ALL of these plans
     $exStmt = $pdo->prepare("
         SELECT we.plan_id, we.day_of_week, we.sets, we.reps, e.name as exercise_name
         FROM workout_exercises we
@@ -62,7 +58,6 @@ if (count($all_plans) > 0) {
     $exStmt->execute($planIds);
     $fetched_exercises = $exStmt->fetchAll();
     
-    // Group the exercises by their plan_id so they are easy to display
     foreach ($fetched_exercises as $ex) {
         $plan_exercises[$ex['plan_id']][] = $ex;
     }
@@ -75,6 +70,8 @@ $progress_logs = $progStmt->fetchAll();
 
 require_once '../includes/header.php';
 ?>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="row mt-4">
     <div class="col-12">
@@ -146,7 +143,7 @@ require_once '../includes/header.php';
                     <div class="accordion" id="plansAccordion">
                         <?php foreach ($all_plans as $index => $plan): 
                             $pid = $plan['id'];
-                            $is_latest = ($index === 0); // Open the newest plan by default
+                            $is_latest = ($index === 0); 
                             $badge_color = $plan['status'] == 'active' ? 'bg-success' : ($plan['status'] == 'completed' ? 'bg-secondary' : 'bg-warning text-dark');
                         ?>
                             <div class="accordion-item border-secondary mb-2" style="border-radius: 6px; overflow: hidden;">
@@ -204,9 +201,18 @@ require_once '../includes/header.php';
             </div>
         </div>
 
-        <div class="card shadow-sm">
+        <div class="card shadow-sm border-success mb-4">
+            <div class="card-header bg-success text-white fw-bold">
+                <i class="bi bi-graph-up-arrow"></i> Client Weight Trend
+            </div>
+            <div class="card-body">
+                <canvas id="trainerWeightChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-secondary">
             <div class="card-header bg-secondary text-white fw-bold">
-                <i class="bi bi-graph-up"></i> Client Progress History
+                <i class="bi bi-journal-text"></i> Client Progress History
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -217,7 +223,7 @@ require_once '../includes/header.php';
                                 <th>Weight (kg)</th>
                                 <th>BMI</th>
                                 <th>Body Fat %</th>
-                                <th>Trainer Notes</th>
+                                <th>User Notes</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -241,7 +247,43 @@ require_once '../includes/header.php';
                 </div>
             </div>
         </div>
+        
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const clientId = <?= json_encode($client_id) ?>;
+    
+    // Fetch data using the specific client_id
+    fetch(`../api/analytics.php?type=progress&user_id=${clientId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && data.dates.length > 0) {
+                const ctx = document.getElementById('trainerWeightChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [{
+                            label: 'Client Weight (kg)',
+                            data: data.weights,
+                            borderColor: '#198754',
+                            backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+            } else {
+                // If there's no data, replace the canvas with a friendly message
+                document.getElementById('trainerWeightChart').parentElement.innerHTML = '<p class="text-muted text-center py-4 mb-0">Client has not logged any weight data yet.</p>';
+            }
+        })
+        .catch(err => console.error("Error loading chart:", err));
+});
+</script>
 
 <?php require_once '../includes/footer.php'; ?>
