@@ -59,6 +59,9 @@ require_once __DIR__ . '/../config/constants.php';
             <li class="nav-item">
                 <a class="nav-link fw-bold text-primary" href="<?= BASE_URL ?>trainer/chat.php"><i class="bi bi-chat-dots"></i> Client Messages</a>
             </li>
+                <li class="nav-item">
+    <a class="nav-link" href="<?= BASE_URL ?>trainer/schedule.php">My Schedule</a>
+</li>
         <?php endif; ?>
         
         <li class="nav-item">
