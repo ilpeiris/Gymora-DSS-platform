@@ -35,9 +35,18 @@ require_once __DIR__ . '/../config/constants.php';
 </head>
 <body>
 
+
+
+
+
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container">
-    <a class="navbar-brand" href="<?= BASE_URL ?>">Gymora</a>
+
+   <a class="navbar-brand" href="<?= BASE_URL ?>index.php">
+    <img src="<?= BASE_URL ?>assets/img/logo.png" alt="Gymora Logo" style="height: 45px; width: auto; object-fit: contain;">
+</a>
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
