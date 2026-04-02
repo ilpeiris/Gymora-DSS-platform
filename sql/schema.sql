@@ -291,3 +291,33 @@ INSERT INTO staff_availability (staff_id, day_of_week, start_time, end_time) VAL
 (3, 'Wednesday', '12:00:00', '20:00:00'),
 (3, 'Thursday', '12:00:00', '20:00:00'),
 (3, 'Friday', '12:00:00', '20:00:00');
+
+
+
+
+TRUNCATE TABLE dss_rules;
+INSERT INTO `dss_rules` (`id`, `condition_name`, `exercise_id`, `rule_type`, `reason`, `alternative_exercise_id`, `severity_threshold`) VALUES
+(1, 'hypertension', 1, 'BLOCK', 'Heavy compound lifts > 80% 1RM are contraindicated for high blood pressure.', 8, 3),
+(2, 'hypertension', 2, 'BLOCK', 'Heavy compound lifts increase dangerous thoracic pressure.', 7, 3),
+(3, 'hypertension', 6, 'WARN', 'Max-effort sprints may spike BP. Monitor closely.', NULL, 1),
+(4, 'lumbar_disc', 1, 'BLOCK', 'Severe spinal loading is prohibited for disc injuries.', 9, 1),
+(5, 'lumbar_disc', 3, 'BLOCK', 'Axial spinal compression is contraindicated.', 10, 1),
+(6, 'lumbar_disc', 4, 'BLOCK', 'Unsupported forward flexion under load.', 11, 1),
+(7, 'knee_injury', 5, 'BLOCK', 'High-impact plyometrics will aggravate knee joint.', 10, 2),
+(8, 'knee_injury', 6, 'BLOCK', 'High-impact running is contraindicated.', 12, 2),
+(9, 'knee_injury', 2, 'WARN', 'Ensure proper tracking of the patella. Keep weight light.', NULL, 1);
+
+TRUNCATE TABLE exercises;
+INSERT INTO `exercises` (`id`, `name`, `category`, `impact_level`, `muscle_groups`, `description`, `equipment_needed`) VALUES
+(1, 'Barbell Deadlift', 'strength', 'high', 'hamstrings, lower back, glutes', 'Heavy compound lifting', 'barbell'),
+(2, 'Barbell Squat', 'strength', 'high', 'quads, glutes, core', 'Heavy compound lifting', 'barbell'),
+(3, 'Overhead Press', 'strength', 'medium', 'shoulders, triceps', 'Vertical pushing', 'barbell'),
+(4, 'Barbell Row', 'strength', 'medium', 'back, biceps', 'Horizontal pulling', 'barbell'),
+(5, 'Box Jumps', 'cardio', 'high', 'legs, calves', 'High-impact plyometrics', 'box'),
+(6, 'Sprint Intervals', 'cardio', 'high', 'full body', 'Max-effort sprints', 'treadmill'),
+(7, 'Zone-2 Cardio', 'cardio', 'low', 'heart', 'Steady state cardio', 'treadmill'),
+(8, 'Resistance Machines', 'strength', 'low', 'various', 'Supported lifting', 'machines'),
+(9, 'Chest-Supported Rows', 'strength', 'low', 'back', 'Spine-safe pulling', 'machine'),
+(10, 'Swimming', 'cardio', 'low', 'full body', 'Zero-impact cardio', 'pool'),
+(11, 'Planks', 'strength', 'low', 'core', 'Isometric core', 'none'),
+(12, 'Elliptical', 'cardio', 'low', 'legs', 'Low-impact cardio', 'elliptical');
