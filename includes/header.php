@@ -51,6 +51,9 @@ require_once __DIR__ . '/../config/constants.php';
             <li class="nav-item">
                 <a class="nav-link fw-bold text-danger" href="<?= BASE_URL ?>doctor/chat.php"><i class="bi bi-chat-dots"></i> Patient Messages</a>
             </li>
+            <li class="nav-item">
+    <a class="nav-link" href="<?= BASE_URL ?>doctor/schedule.php">My Schedule</a>
+</li>
             
         <?php elseif ($_SESSION['role'] === ROLE_TRAINER): ?>
             <li class="nav-item">

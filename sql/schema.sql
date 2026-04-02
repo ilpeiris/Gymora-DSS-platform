@@ -267,3 +267,27 @@ CREATE TABLE IF NOT EXISTS workout_exercises (
     FOREIGN KEY (plan_id) REFERENCES workout_plans(id) ON DELETE CASCADE,
     FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
 );
+
+
+
+
+CREATE TABLE IF NOT EXISTS staff_availability (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    staff_id INT NOT NULL,
+    day_of_week ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    FOREIGN KEY (staff_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Give the test Doctor (User ID 2) some hours (9 AM to 5 PM, Mon-Wed)
+INSERT INTO staff_availability (staff_id, day_of_week, start_time, end_time) VALUES
+(2, 'Monday', '09:00:00', '17:00:00'),
+(2, 'Tuesday', '09:00:00', '17:00:00'),
+(2, 'Wednesday', '09:00:00', '17:00:00');
+
+-- Give the test Trainer (User ID 3) some hours (12 PM to 8 PM, Wed-Fri)
+INSERT INTO staff_availability (staff_id, day_of_week, start_time, end_time) VALUES
+(3, 'Wednesday', '12:00:00', '20:00:00'),
+(3, 'Thursday', '12:00:00', '20:00:00'),
+(3, 'Friday', '12:00:00', '20:00:00');
