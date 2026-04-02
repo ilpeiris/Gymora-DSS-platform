@@ -46,6 +46,9 @@ require_once __DIR__ . '/../config/constants.php';
             <li class="nav-item">
                 <a class="nav-link" href="<?= BASE_URL ?>user/profile.php">My Profile</a>
             </li>
+            <li class="nav-item">
+    <a class="nav-link text-success fw-bold" href="<?= BASE_URL ?>user/progress.php"><i class="bi bi-graph-up"></i> Progress</a>
+</li>
             
         <?php elseif ($_SESSION['role'] === ROLE_DOCTOR): ?>
             <li class="nav-item">
