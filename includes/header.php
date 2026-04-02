@@ -37,21 +37,22 @@ require_once __DIR__ . '/../config/constants.php';
         </li>
 
         <?php if ($_SESSION['role'] === ROLE_USER): ?>
-            <li class="nav-item">
+            <!--<li class="nav-item">
                 <a class="nav-link" href="<?= BASE_URL ?>user/classes.php">Book Classes</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link fw-bold text-primary" href="<?= BASE_URL ?>user/chat.php"><i class="bi bi-chat-dots"></i> Messages</a>
-            </li>
+            </li>-->
+          
             <li class="nav-item">
                 <a class="nav-link" href="<?= BASE_URL ?>user/profile.php">My Profile</a>
             </li>
-            <li class="nav-item">
+            <!--<li class="nav-item">
     <a class="nav-link text-success fw-bold" href="<?= BASE_URL ?>user/progress.php"><i class="bi bi-graph-up"></i> Progress</a>
-</li>
+</li>-->
 <li class="nav-item">
     <a class="nav-link text-danger fw-bold" href="<?= BASE_URL ?>user/medical_report.php"><i class="bi bi-file-medical"></i> Medical Profile</a>
 </li>
+  <li class="nav-item">
+                <a class="nav-link fw-bold text-primary" href="<?= BASE_URL ?>user/chat.php"><i class="bi bi-chat-dots"></i> Messages</a>
+            </li>
             
         <?php elseif ($_SESSION['role'] === ROLE_DOCTOR): ?>
             <li class="nav-item">
