@@ -4,9 +4,9 @@ require_once 'config/db.php';
 require_once 'config/session.php';
 require_once 'config/constants.php';
 
-// Fetch all active Doctors and Trainers from the database
+// Fetch all active Doctors and Trainers from the database (NOW INCLUDING 'TITLE')
 $stmt = $pdo->query("
-    SELECT name, email, role 
+    SELECT name, email, role, title 
     FROM users 
     WHERE role IN ('doctor', 'trainer') AND is_active = 1 
     ORDER BY role ASC, name ASC
@@ -42,7 +42,7 @@ require_once 'includes/header.php';
                                 </div>
                             </div>
                             <h4 class="fw-bold mb-1">Dr. <?= htmlspecialchars($doc['name']) ?></h4>
-                            <p class="text-danger fw-bold small text-uppercase mb-3">Resident Physician</p>
+                            <p class="text-danger fw-bold small text-uppercase mb-3"><?= htmlspecialchars($doc['title'] ?? 'Resident Physician') ?></p>
                             <p class="text-muted small">Specializes in pre-exercise medical assessments, injury diagnostics, and DSS clinical clearances.</p>
                         </div>
                     </div>
@@ -66,7 +66,7 @@ require_once 'includes/header.php';
                                 </div>
                             </div>
                             <h4 class="fw-bold mb-1"><?= htmlspecialchars($trainer['name']) ?></h4>
-                            <p class="text-primary fw-bold small text-uppercase mb-3">Expert Trainer</p>
+                            <p class="text-primary fw-bold small text-uppercase mb-3"><?= htmlspecialchars($trainer['title'] ?? 'Expert Trainer') ?></p>
                             <p class="text-muted small">Designs medically-safe workout plans and leads DSS-filtered group fitness classes.</p>
                         </div>
                     </div>
