@@ -6,39 +6,6 @@ require_once '../config/constants.php';
 
 requireRole(ROLE_USER);
 
-$success = '';
-$error = '';
-
-// Handle Package Purchase POST request
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['package_id'])) {
-    $package_id = $_POST['package_id'];
-    
-    // Fetch package details to calculate expiry and consultations
-    $pkgStmt = $pdo->prepare("SELECT duration_months, consultation_count FROM packages WHERE id = ? AND is_active = 1");
-    $pkgStmt->execute([$package_id]);
-    $package = $pkgStmt->fetch();
-    
-    if ($package) {
-        // Calculate new expiry date
-        $duration = $package['duration_months'];
-        $expiry_date = date('Y-m-d', strtotime("+$duration months"));
-        
-        // Update user record
-        $updateStmt = $pdo->prepare("
-            UPDATE users 
-            SET package_id = ?, package_expiry = ?, consultations_remaining = ? 
-            WHERE id = ?
-        ");
-        
-        try {
-            $updateStmt->execute([$package_id, $expiry_date, $package['consultation_count'], $_SESSION['user_id']]);
-            $success = "Package purchased successfully! You can now book an appointment.";
-        } catch (PDOException $e) {
-            $error = "Failed to purchase package. Please try again.";
-        }
-    }
-}
-
 // Fetch all active packages
 $stmt = $pdo->query("SELECT * FROM packages WHERE is_active = 1");
 $packages = $stmt->fetchAll();
@@ -53,13 +20,6 @@ require_once '../includes/header.php';
         <hr>
     </div>
 </div>
-
-<?php if ($success): ?>
-    <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
-<?php endif; ?>
-<?php if ($error): ?>
-    <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-<?php endif; ?>
 
 <div class="row justify-content-center mt-4">
     <?php foreach ($packages as $pkg): ?>
@@ -77,16 +37,15 @@ require_once '../includes/header.php';
                         $features = json_decode($pkg['features'], true);
                         if ($features) {
                             foreach ($features as $feature) {
-                                echo "<li class='mb-2'>✔️ " . htmlspecialchars($feature) . "</li>";
+                                echo "<li class='mb-2 text-start'><i class='bi bi-check-circle-fill text-success me-2'></i> " . htmlspecialchars($feature) . "</li>";
                             }
                         }
                         ?>
                     </ul>
                     
-                    <form method="POST" action="" class="mt-auto">
-                        <input type="hidden" name="package_id" value="<?= $pkg['id'] ?>">
-                        <button type="submit" class="btn btn-outline-primary w-100 fw-bold">Select This Plan</button>
-                    </form>
+                    <div class="mt-auto">
+                        <a href="checkout.php?package_id=<?= $pkg['id'] ?>" class="btn btn-primary w-100 fw-bold py-2 rounded-pill">Select This Plan</a>
+                    </div>
                 </div>
             </div>
         </div>
