@@ -32,6 +32,12 @@
   --cf-bg-layer:     #0E0D24;
   --cf-bg-raised:    #13122E;
 
+  /* ── Compatibility aliases (used in older index.php hero inline styles) ── */
+  --cf-slate-900:    #0F0E2A;
+  --cf-slate-800:    #1E1B4B;
+  --cf-slate-700:    #2D2A6E;
+  --bs-dark-rgb:     8, 8, 20;
+
   /* ── Glass surfaces ── */
   --cf-glass:        rgba(255, 255, 255, 0.04);
   --cf-glass-hover:  rgba(255, 255, 255, 0.07);
@@ -91,49 +97,106 @@
   50%       { transform: translate(40px,70px) scale(0.9); }
 }
 
+/* ─── html fallback (covers gap below short pages) ──────────────
+──────────────────────────────────────────────────────────────── */
+html {
+  background-color: var(--cf-bg-base);
+  min-height: 100%;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BODY — gradient lives HERE, not in a pseudo-element.
+
+   WHY: body::before/after with position:fixed and z-index:0
+   paint ABOVE non-positioned text in the CSS stacking order,
+   making headings invisible (the original bug). And z-index:-1
+   pseudo-elements get hidden behind body's own opaque background
+   in most browsers, causing a plain white page (the v2.1 bug).
+
+   SOLUTION: background-image + background-attachment:fixed on
+   body itself. A background can never cover its own element's
+   content — no z-index tricks needed anywhere.
+════════════════════════════════════════════════════════════════ */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--cf-bg-base);
+  background-color: var(--cf-bg-base) !important;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 15% 20%,  rgba(124, 58,237,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 75%,  rgba( 34,211,238,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 50% 100%, rgba(167,139,250,0.10) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 40% at 90% 10%,  rgba(124, 58,237,0.12) 0%, transparent 50%);
+  background-attachment: fixed;   /* gradient stays viewport-relative while page scrolls */
+  background-size: cover;
   color: var(--cf-text-2);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   min-height: 100vh;
-  position: relative;
 }
 
-/* Mesh gradient layer — sits behind everything */
+/* ─── Animated orb — purely decorative overlay ───────────────────
+   Now that the background is on body itself, the pseudo-elements
+   are free to do animations without any stacking conflict.
+   They sit above the body background but are pointer-events:none
+   so they never block clicks, and they use mix-blend-mode:screen
+   so they only brighten the gradient areas, never darken text.
+──────────────────────────────────────────────────────────────── */
 body::before {
   content: '';
   position: fixed;
-  inset: 0;
-  z-index: 0;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 65%);
+  top: -150px; right: -150px;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse 70% 50% at 15% 20%, rgba(124,58,237,0.22) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 85% 75%, rgba(34,211,238,0.14) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 60% at 50% 100%, rgba(167,139,250,0.10) 0%, transparent 50%),
-    var(--cf-bg-base);
+  mix-blend-mode: screen;
+  animation: orb-drift-1 18s ease-in-out infinite;
+  z-index: 0;
 }
 
-/* Floating orbs */
 body::after {
   content: '';
   position: fixed;
   width: 500px; height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
-  top: -100px; right: -100px;
-  z-index: 0;
+  background: radial-gradient(circle, rgba(34,211,238,0.08) 0%, transparent 65%);
+  bottom: -100px; left: 20%;
   pointer-events: none;
-  animation: orb-drift-1 18s ease-in-out infinite;
+  mix-blend-mode: screen;
+  animation: orb-drift-2 22s ease-in-out infinite;
+  z-index: 0;
 }
 
-/* All content sits above the mesh */
+/* ─── Portal pages ───────────────────────────────────────────── */
 .cf-sidebar,
 .cf-main,
 .cf-topbar,
 .cf-content { position: relative; z-index: 1; }
+
+/* ─── Public pages — lift content above orb pseudo-elements ─────
+   body::before/after are now z-index:0. Any content that needs
+   to sit above them gets z-index:1 via position:relative.
+──────────────────────────────────────────────────────────────── */
+.container,
+.container-fluid,
+.container-sm,
+.container-md,
+.container-lg,
+.container-xl,
+.container-xxl {
+  position: relative;
+  z-index: 1;
+}
+
+body > div,
+body > section,
+body > header,
+body > footer,
+body > main,
+body > nav {
+  position: relative;
+  z-index: 1;
+}
 
 
 /* ════════════════════════════════════════════════════════════════
@@ -1444,7 +1507,142 @@ div[style*="padding:12px 20px;border-top"] a:hover { color: var(--cf-cyan) !impo
 
 
 /* ════════════════════════════════════════════════════════════════
-   30. SCROLLBAR
+   30. PUBLIC PAGE FIXES
+   Covers index.php, login.php, register.php and any page that
+   uses Bootstrap's light/white utility classes for sections that
+   were originally designed for a light-background site.
+════════════════════════════════════════════════════════════════ */
+
+/* ─── Hero section (bg-dark + inline gradient) ──────────────────
+   The inline style uses var(--cf-slate-900) which is now defined.
+   We reinforce the minimum hero appearance so even if the inline
+   gradient is empty/broken, the section still looks intentional.
+──────────────────────────────────────────────────────────────── */
+.bg-dark {
+  background: rgba(255,255,255,0.04) !important;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--cf-glass-border);
+}
+
+/* Any section that still has a hardcoded white/light background
+   via inline style or bootstrap class — convert to glass */
+.bg-white {
+  background: rgba(255,255,255,0.05) !important;
+  backdrop-filter: blur(16px);
+}
+
+.bg-light {
+  background: rgba(255,255,255,0.04) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--cf-glass-border);
+}
+
+/* ─── Public page text colours ───────────────────────────────────
+   On the dark background, .text-dark (used for headings) should
+   map to bright white. These were invisible when the heading was
+   on a section that had a white bg in the original design, but
+   now the bg is dark so white text is correct.
+──────────────────────────────────────────────────────────────── */
+.text-dark  { color: var(--cf-text-1) !important; }
+.text-white { color: var(--cf-text-1) !important; }
+.text-body  { color: var(--cf-text-2) !important; }
+.text-black { color: var(--cf-text-1) !important; }
+
+/* Lead paragraphs on public pages */
+p.lead { color: var(--cf-text-2); }
+
+/* ─── Feature / service cards on landing page ───────────────────
+   border-0 removes the default card border; we add the glass one.
+──────────────────────────────────────────────────────────────── */
+.card.border-0 {
+  border: 1px solid var(--cf-glass-border) !important;
+}
+.card.border-0 h4,
+.card.border-0 h3 { color: var(--cf-text-1); }
+.card.border-0 p.text-muted { color: var(--cf-text-3) !important; }
+
+/* ─── CTA / rounded panel (p-5 bg-light rounded-4) ─────────────
+   rounded-4 is a Bootstrap 5 utility. Preserve the radius.
+──────────────────────────────────────────────────────────────── */
+.rounded-4 { border-radius: 1.25rem !important; }
+.rounded-3 { border-radius: 1rem !important; }
+
+.p-5.bg-light,
+.p-4.bg-light {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid var(--cf-glass-border);
+  backdrop-filter: blur(16px);
+}
+
+/* ─── Bootstrap icons used as large decorative icons ────────────
+   Original code uses text-danger, text-primary, text-success on
+   3rem icons. Keep those vibrant against the dark background.
+──────────────────────────────────────────────────────────────── */
+.text-danger  { color: var(--cf-red) !important; }
+.text-primary { color: var(--cf-purple) !important; }
+.text-success { color: var(--cf-green) !important; }
+.text-info    { color: var(--cf-cyan) !important; }
+.text-warning { color: var(--cf-amber) !important; }
+
+/* ─── Footer ────────────────────────────────────────────────────
+   Default Bootstrap footer often uses bg-dark/bg-light or no
+   background. Force glass style and visible text.
+──────────────────────────────────────────────────────────────── */
+footer {
+  background: rgba(8,8,20,0.85) !important;
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--cf-glass-border);
+  color: var(--cf-text-3);
+  position: relative;
+  z-index: 1;
+}
+
+footer h5, footer h6, footer .widget_title {
+  color: var(--cf-text-1);
+  font-family: 'Poppins', 'Inter', sans-serif;
+}
+
+footer a, footer p, footer li { color: var(--cf-text-3); }
+footer a:hover { color: var(--cf-purple); }
+
+footer .footer-text,
+footer .copyright-text { color: var(--cf-text-3); font-size: 0.85rem; }
+
+/* ─── Navbar override for public pages ──────────────────────────
+   header.php likely uses a standard Bootstrap navbar.
+   Ensure the sticky/fixed navbar sits above the mesh.
+──────────────────────────────────────────────────────────────── */
+.navbar { z-index: 100 !important; }
+
+/* btn-outline-light on dark hero → convert to glass button */
+.btn-outline-light {
+  border-color: rgba(255,255,255,0.35);
+  color: var(--cf-text-1);
+  background: transparent;
+}
+.btn-outline-light:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.60);
+  color: #fff;
+}
+
+/* ─── display-* heading classes ─────────────────────────────────
+   Bootstrap display classes (display-1 through display-6) used
+   for hero headings. Ensure they use our light text colour.
+──────────────────────────────────────────────────────────────── */
+.display-1, .display-2, .display-3,
+.display-4, .display-5, .display-6 {
+  color: var(--cf-text-1);
+}
+
+/* ─── tracking-wide (Tailwind carry-over class) ─────────────────
+   index.php uses this class which Bootstrap doesn't define.
+──────────────────────────────────────────────────────────────── */
+.tracking-wide { letter-spacing: 0.08em; }
+
+
+/* ════════════════════════════════════════════════════════════════
+   31. SCROLLBAR
 ════════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }

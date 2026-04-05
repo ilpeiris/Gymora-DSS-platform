@@ -16,7 +16,7 @@ require_once __DIR__ . '/../config/constants.php';
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-<link rel="stylesheet" href="<?= BASE_URL ?>assets/css/gymora-theme-glass3.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>assets/css/gymora-theme-glass.css">
 
     <style>
         body { background-color: #f8f9fa; }
