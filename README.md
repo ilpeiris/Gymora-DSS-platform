@@ -1,4 +1,4 @@
-# Gymora  Medical-Integrated Gym Management Platform
+# Gymora | Rule-Based DSS Engine with RBAC, GDPR Audit Logging & BI Dashboard
 
 ![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?style=flat-square&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)
@@ -7,7 +7,11 @@
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square)
 
-> A full-stack web platform bridging clinical healthcare and commercial gym management. Gymora connects Members, Doctors, Trainers, and Admins in a single secure environment powered by a **Rule-Based Decision Support System (DSS)** that enforces medical constraints in real time.
+> A full-stack PHP 8 / MySQL platform built around a deterministic Rule-Based Decision 
+Support System (DSS) engine, a four-tier RBAC architecture, AES-256 encrypted data 
+pipelines, automated GDPR audit logging, and a Chart.js-powered Business Intelligence 
+dashboard  deployed across four isolated role portals with a shared real-time AJAX 
+communication layer.
 
 ---
 
