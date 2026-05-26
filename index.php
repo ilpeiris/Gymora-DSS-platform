@@ -1,4 +1,13 @@
 <?php
+/**
+ * Gymora — Gym Management Platform with Rule-Based DSS Engine & RBAC
+ * Author:  Isuru Lakmal Peiris
+ * GitHub:  github.com/ilpeiris
+ * License: GPL v3
+ */
+
+
+<?php
 // /Gymora/index.php
 require_once 'config/db.php';
 require_once 'config/session.php';
